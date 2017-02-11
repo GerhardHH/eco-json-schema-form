@@ -312,6 +312,7 @@ el.error = {
         value: {
           type: Object,
           notify: true,
+          observer: '_valueChanged',
           value: function() { return {}; }
         },
         error: {
@@ -426,6 +427,28 @@ el.error = {
           value[property.property] = ctx._deepClone(property.value);
         });
         this.value = value;
+      },
+      _valueChanged: function(val) {
+         if (val != undefined && val != {} && this._schemaProperties != undefined) {
+            var ctx = this;
+            ctx._schemaProperties.forEach(function(prop) {
+               var v = val[prop.property];
+               if (v == undefined && prop.component.name=="eco-json-schema-array") {
+                  // if we have an array element, set it to an empty array
+                  var ele = ctx.$$("[name=" + prop.property + "]");
+                  var sel = prop.valueSelector || 'value';
+                  if (ele != undefined) {
+                     ele[sel] = [];
+                  }
+               } else {
+                  var ele = ctx.$$("[name=" + prop.property + "]");
+                  var sel = prop.valueSelector || 'value';
+                  if (ele != undefined) {
+                     ele[sel] = val[prop.property];
+                  }
+               }
+            });
+         }
       },
       _buildForm: function() {
         var ctx = this;
